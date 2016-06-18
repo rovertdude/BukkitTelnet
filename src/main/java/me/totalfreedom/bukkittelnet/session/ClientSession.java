@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -77,7 +78,14 @@ public final class ClientSession extends Thread
             syncTerminateSession();
         }
 
+        writeLine("Logged in as " + username + ".");
+        TelnetLogger.info(clientAddress + " logged in as \"" + username + "\".");
+
+        // Start feeding data to the client.
+        telnet.getPlugin().appender.addSession(this);
+
         mainLoop();
+
         syncTerminateSession();
     }
 
@@ -356,12 +364,6 @@ public final class ClientSession extends Thread
             return;
         }
 
-        writeLine("Logged in as " + username + ".");
-        TelnetLogger.info(clientAddress + " logged in as \"" + username + "\".");
-
-        // Start feeding data to the client.
-        telnet.getPlugin().appender.addSession(this);
-
         // Process commands
         while (syncIsConnected())
         {
@@ -370,6 +372,10 @@ public final class ClientSession extends Thread
             try
             {
                 command = reader.readLine();
+            }
+            catch (SocketException ex)
+            {
+                break;
             }
             catch (IOException ex)
             {

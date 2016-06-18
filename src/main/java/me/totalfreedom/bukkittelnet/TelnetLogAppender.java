@@ -16,6 +16,7 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 public class TelnetLogAppender extends AbstractAppender
 {
+    private static final long serialVersionUID = 234234L;
 
     private final Set<ClientSession> sessions;
     private final SimpleDateFormat dateFormat;
