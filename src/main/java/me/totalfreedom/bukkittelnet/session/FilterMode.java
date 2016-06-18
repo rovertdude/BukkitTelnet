@@ -3,7 +3,7 @@ package me.totalfreedom.bukkittelnet.session;
 public enum FilterMode
 {
 
-    FULL,
+    NONE,
     NONCHAT_ONLY,
     CHAT_ONLY;
 }

@@ -24,37 +24,34 @@ public final class ClientSession extends Thread
 {
 
     public static final Pattern NONASCII_FILTER = Pattern.compile("[^\\x20-\\x7E]");
-    public static final Pattern AUTH_INPUT_FILTER = Pattern.compile("[^a-zA-Z0-9]");
-    public static final Pattern COMMAND_INPUT_FILTER = Pattern.compile("^[^a-zA-Z0-9/\\?!\\.]+");
+    public static final Pattern AUTH_INPUT_FILTER = Pattern.compile("[^_a-zA-Z0-9]");
+    public static final Pattern COMMAND_INPUT_FILTER = Pattern.compile("^[^_a-zA-Z0-9/\\?!\\.]+");
     //
     private final TelnetServer telnet;
     private final Socket clientSocket;
     private final String clientAddress;
     private final SessionCommandSender commandSender;
     //
-    private FilterMode filterMode;
+    private FilterMode filterMode = FilterMode.NONE;
     //
     private BufferedWriter writer;
     private BufferedReader reader;
-    private String username;
-    private boolean hasTerminated;
-    private boolean enhancedMode = false;
+    private String username = "";
+    private volatile boolean terminated = false;
+    private volatile boolean authenticated = false;
+    private volatile boolean enhancedMode = false;
 
     public ClientSession(TelnetServer telnet, Socket clientSocket)
     {
         this.telnet = telnet;
         this.clientSocket = clientSocket;
         this.clientAddress = clientSocket.getInetAddress().getHostAddress();
-        this.username = "";
         this.commandSender = new SessionCommandSender(this);
-        this.filterMode = FilterMode.FULL;
-        this.hasTerminated = false;
     }
 
     @Override
     public void run()
     {
-        TelnetLogger.info("Client connected: " + clientAddress);
         try
         {
             synchronized (clientSocket)
@@ -89,6 +86,11 @@ public final class ClientSession extends Thread
         syncTerminateSession();
     }
 
+    public boolean syncIsAuthenticated()
+    {
+        return authenticated;
+    }
+
     public boolean syncIsConnected()
     {
         synchronized (clientSocket)
@@ -99,14 +101,19 @@ public final class ClientSession extends Thread
 
     public synchronized void syncTerminateSession()
     {
-        if (hasTerminated)
+        if (terminated)
         {
             return;
         }
 
-        hasTerminated = true;
+        terminated = true;
 
-        TelnetLogger.info("Closing connection: " + clientAddress + (username.isEmpty() ? "" : " (" + username + ")"));
+        if (authenticated)
+        {
+            TelnetLogger.info("Closing connection: " + clientAddress + (username.isEmpty() ? "" : " (" + username + ")"));
+        }
+
+        // Stop feeding the client with data
         telnet.getPlugin().appender.removeSession(this);
 
         synchronized (clientSocket)
@@ -124,7 +131,6 @@ public final class ClientSession extends Thread
             catch (IOException ex)
             {
             }
-
         }
     }
 
@@ -210,7 +216,7 @@ public final class ClientSession extends Thread
 
     private boolean authenticate()
     {
-        if (hasTerminated)
+        if (terminated)
         {
             return false;
         }
@@ -281,6 +287,7 @@ public final class ClientSession extends Thread
             {
                 break;
             }
+
             if (input.isEmpty())
             {
                 continue;
@@ -288,7 +295,7 @@ public final class ClientSession extends Thread
 
             input = AUTH_INPUT_FILTER.matcher(input).replaceAll("").trim();
 
-            if (input.isEmpty())
+            if (input.isEmpty() || input.length() > 20)
             {
                 writeLine("Invalid username.");
                 continue;
@@ -308,6 +315,7 @@ public final class ClientSession extends Thread
         // don't ask for it.
         if (passAuth)
         {
+            authenticated = true;
             return true;
         }
 
@@ -325,7 +333,7 @@ public final class ClientSession extends Thread
             }
             catch (IOException ex)
             {
-                break;
+                return false;
             }
 
             if (input == null)
@@ -341,6 +349,7 @@ public final class ClientSession extends Thread
 
             if (telnet.getConfig().getPassword().equals(input))
             {
+                authenticated = true;
                 return true;
             }
 
@@ -359,7 +368,7 @@ public final class ClientSession extends Thread
 
     private void mainLoop()
     {
-        if (hasTerminated)
+        if (terminated)
         {
             return;
         }
@@ -429,7 +438,7 @@ public final class ClientSession extends Thread
         {
             switch (filterMode)
             {
-                case FULL:
+                case NONE:
                 {
                     filterMode = FilterMode.CHAT_ONLY;
                     writeLine("Showing only chat logs.");
@@ -443,7 +452,7 @@ public final class ClientSession extends Thread
                 }
                 case NONCHAT_ONLY:
                 {
-                    filterMode = FilterMode.FULL;
+                    filterMode = FilterMode.NONE;
                     writeLine("Showing all logs.");
                     break;
                 }
