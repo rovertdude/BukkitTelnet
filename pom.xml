@@ -6,65 +6,65 @@
     <artifactId>bukkittelnet</artifactId>
     <version>4.3</version>
     <packaging>jar</packaging>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jar.finalName>${project.name}</jar.finalName>
     </properties>
-    
+
     <name>BukkitTelnet</name>
     <description>Admin telnet access for minecraft servers.</description>
     <url>https://github.com/TotalFreedom/BukkitTelnet</url>
-    
+
     <licenses>
         <license>
             <name>TotalFreedom General License</name>
             <url>https://github.com/TotalFreedom/License/blob/master/LICENSE.md</url>
         </license>
     </licenses>
-    
+
     <organization>
         <name>Total Freedom</name>
         <url>https://totalfreedom.me</url>
     </organization>
-    
+
     <scm>
         <connection>scm:git:git@github.com:TotalFreedom/BukkitTelnet.git</connection>
         <developerConnection>scm:git:git@github.com:TotalFreedom/BukkitTelnet.git</developerConnection>
         <url>git@github.com:TotalFreedom/BukkitTelnet.git</url>
     </scm>
-    
+
     <repositories>
         <repository>
             <id>spigot</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.9-SNAPSHOT</version>
+            <version>1.9-R0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.6</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.5</version>
             <scope>compile</scope>
         </dependency>
-        
+
     </dependencies>
-    
+
     <build>
         <plugins>
             <!-- Compiler -->
@@ -78,7 +78,7 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-        
+
             <!-- Checkstyle -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -101,7 +101,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <reporting>
         <!-- Checkstyle -->
         <plugins>
@@ -110,7 +110,7 @@
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>2.5</version>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <version>2.17</version>
