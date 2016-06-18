@@ -4,7 +4,7 @@
 
     <groupId>me.totalfreedom</groupId>
     <artifactId>bukkittelnet</artifactId>
-    <version>4.3</version>
+    <version>4.4</version>
     <packaging>jar</packaging>
 
     <properties>
